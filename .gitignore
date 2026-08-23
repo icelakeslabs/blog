@@ -1,0 +1,26 @@
+# GitHub Pages serves the repo root, so GENERATED output must be committed:
+#   index.html, feed.xml, posts/*/post.md, posts/*/index.html
+# Authored:
+#   posts/*/src.txt, posts/*/meta.txt, posts/*/images/*, style.css,
+#   lib/*, build.sh, README.md
+
+# --- local working files: kept on disk, never published -------------------
+*~
+*.zip
+godaddy-*-probe.html
+unused_images/
+20260819_solar_charging_blog.txt
+rivian_fields_and_graph_specs.txt
+
+# build reports (regenerated every build; useful locally, no need to publish)
+posts/*/review.txt
+posts/*/images-todo.txt
+posts/*/images-missing.txt
+
+.DS_Store
+
+# internal handoff note, not for publication
+HANDOFF.md
+
+# local publish runbook, not for publication
+PUBLISH_STEPS.md

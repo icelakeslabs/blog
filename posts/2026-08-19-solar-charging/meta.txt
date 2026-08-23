@@ -1,0 +1,5 @@
+# Post metadata. Date and slug come from the directory name (YYYY-MM-DD-slug).
+# Title and subtitle are read from the first and third lines of src.txt.
+summary: Bending a Tesla Wall Connector to charge a Rivian exclusively on excess solar — RS-485, MODBUS, SunSpec, and a great deal of trial and error.
+tags: ESP32, solar, Tesla, Rivian, MODBUS
+draft: false

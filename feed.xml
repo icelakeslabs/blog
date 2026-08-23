@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+  <title>Ice Lakes Labs</title>
+  <link>https://example.com/</link>
+  <description>Notes from an over-instrumented house.</description>
+  <item>
+    <title>Adventures in ESP32-based automation - Olimex and Claude take on Tesla and PG&amp;E</title>
+    <link>https://example.com/posts/2026-08-19-solar-charging/</link>
+    <guid isPermaLink="true">https://example.com/posts/2026-08-19-solar-charging/</guid>
+    <pubDate>Wed, 19 Aug 2026 12:00:00 +0000</pubDate>
+    <description>Bending a Tesla Wall Connector to charge a Rivian exclusively on excess solar — RS-485, MODBUS, SunSpec, and a great deal of trial and error.</description>
+  </item>
+</channel>
+</rss>
