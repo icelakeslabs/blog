@@ -76,7 +76,8 @@ Maybe it's not so bad to just plug in the Rivian and let it use all the solar av
 
 That sounds ok in theory, but in practice, I get this:
 
-=-= 20260604_solar_crash and 20260604_solar_crash_2
+=-= 20260604_solar_crash
+=-= 20260604_solar_crash_2
 
 It seems as though the logic in the Tesla setup doesn't like to power the car partially on solar - it's all, or nothing - with "nothing" meaning we pull up to 9.6kW from the grid.  AND sometimes commencing a charge "crashes" solar, dropping solar production to nothing.  Pretty poor behavior.
 

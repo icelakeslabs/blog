@@ -65,8 +65,11 @@ Maybe it's not so bad to just plug in the Rivian and let it use all the solar av
 
 That sounds ok in theory, but in practice, I get this:
 
-<!-- IMG-02 (src line 79): 20260604_solar_crash and 20260604_solar_crash_2 -->
-![20260604_solar_crash and 20260604_solar_crash_2](images/20260604_solar_crash.PNG)
+<!-- IMG-02 (src line 79): 20260604_solar_crash -->
+![20260604_solar_crash](images/20260604_solar_crash.PNG)
+
+<!-- IMG-03 (src line 80): 20260604_solar_crash_2 -->
+![20260604_solar_crash_2](images/20260604_solar_crash_2.PNG)
 
 It seems as though the logic in the Tesla setup doesn't like to power the car partially on solar - it's all, or nothing - with "nothing" meaning we pull up to 9.6kW from the grid.  AND sometimes commencing a charge "crashes" solar, dropping solar production to nothing.  Pretty poor behavior.
 
@@ -90,7 +93,7 @@ I've had some success (and fun!) with IoT-related projects based on Olimex's sin
 
 After completing two other projects - one to monitor an ultrasonic water flowmeter over RS-485, another to monitor septic pump run cycles (with just a current switch), I've settled specifically on Olimex's ESP32-PoE-ISO SKU - <https://www.olimex.com/Products/IoT/ESP32/ESP32-POE-ISO/>
 
-<!-- IMG-03 (src line 104): photo of Olimex -->
+<!-- IMG-04 (src line 105): photo of Olimex -->
 ![photo of Olimex](images/ESP32-POE-ISO-1.jpg)
 
 This Olimex unit supports both WiFi and Ethernet, and is powered by your choice of micro-USB, PoE, or direct connection to the power rails.  The "ISO" part of the name denotes the 3,000v galvanic isolation between the PoE Ethernet part and board's power supply; seems like cheap insurance.  I strongly favor wired Ethernet and PoE wherever feasible, which endows connected devices with the simplicity of a single physical connection and worst-case-scenario remote reboot ("have you tried turning it off and back on again?").  Olimex offers other versions of the same part, including one with an external wifi antenna connector, and larger, more capable boards with Bluetooth, I/R, CAN connectivity, etc.
@@ -109,10 +112,10 @@ The Olimex unit is small - Olimex will sell you a little 3D-printed enclosure th
 
 I duplicated that overall design for the water flow monitor, adding a MAX485 RS-485 transceiver (<https://www.amazon.com/dp/B00NIOLNAG>):
 
-<!-- IMG-04 (src line 122): Insert MAX485_JiuWu -->
+<!-- IMG-05 (src line 123): Insert MAX485_JiuWu -->
 ![Insert MAX485_JiuWu](images/MAX485_JiuWu.jpg)
 
-<!-- IMG-05 (src line 123): Insert MAX485_mine -->
+<!-- IMG-06 (src line 124): Insert MAX485_mine -->
 ![Insert MAX485_mine](images/MAX485_mine.jpg)
 
 (and discovering along the way that the MAX485 I bought is not reverse-polarity-friendly... buy a bunch; they're cheap...)
@@ -336,14 +339,14 @@ Some internet research suggested that my installer would have to "unlock" or som
 
 Once I got there, I scrolled through the options to "Remote Meter" and discovered... "not detected".
 
-<!-- IMG-06 (src line 353): insert screenshot of Tesla One menu and screenshot of "Meter not detected" message - this is 20260616_GPM.PNG. -->
+<!-- IMG-07 (src line 354): insert screenshot of Tesla One menu and screenshot of "Meter not detected" message - this is 20260616_GPM.PNG. -->
 ![insert screenshot of Tesla One menu and screenshot of "Meter not detected" message - this is 20260616_GPM.PNG.](images/20260616_GPM.PNG)
 
 Ugh.  Looks like I'll have to wire it up first.
 
 Also... note the menu option for something called "Group Power Management" - "Controlled by the leader" (TGxxxxx..) - I surmise that the Tesla Gateway ("TG...") was likely to try to prevent anything else from controlling the WC.  I couldn't turn it off:
 
-<!-- IMG-07 (src line 359): insert screenshot of "Connect to the leader" - 20260617_GPMConnectToLeader.PNG -->
+<!-- IMG-08 (src line 360): insert screenshot of "Connect to the leader" - 20260617_GPMConnectToLeader.PNG -->
 ![insert screenshot of "Connect to the leader" - 20260617_GPMConnectToLeader.PNG](images/20260617_GPMConnectToLeader.PNG)
 
 ...and recall that there does not seem to be any locally-accessible network interface to the v3 gateway.
@@ -354,7 +357,7 @@ Having set up an RS-485 connection to an Olimex board via a MAX485 on a previous
 
 With some nice shielded cable in place for the RS-485 connection... let's try this again:
 
-<!-- IMG-08 (src line 369): insert 20260616_MeterNotDetected -->
+<!-- IMG-09 (src line 370): insert 20260616_MeterNotDetected -->
 ![insert 20260616_MeterNotDetected](images/20260616_MeterNotDetected.jpg)
 
 Same message - "Remote Meter" - "Not Detected"
@@ -443,7 +446,7 @@ Here's what happened.
 
 After flashing the ESP32, I started up Tesla One to see if we've got a working remote meter emulator:
 
-<!-- IMG-09 (src line 455): insert 20260617_MeterNotDetected -->
+<!-- IMG-10 (src line 456): insert 20260617_MeterNotDetected -->
 ![insert 20260617_MeterNotDetected](images/20260617_MeterNotDetected.PNG)
 
 Ugh.  What now?
@@ -459,12 +462,12 @@ In retrospect, adding better diagnostics on the RS-485 handling would have been 
 
 Turns out there are some very inexpensive yet capable little oscilloscopes out there.  I'm pretty paranoid about cheap electronics - who knows what code lies therein (and who is behind it) - but these little gizmos aren't network-enabled, so the overall threat seems minimal.  I bought "FNIRSI" unit from Amazon - <https://www.amazon.com/dp/B0FDPYNQBC> .
 
-<!-- IMG-10 (src line 470): insert FNIRSI scope marketing image -->
+<!-- IMG-11 (src line 471): insert FNIRSI scope marketing image -->
 ![insert FNIRSI scope marketing image](images/FNIRSI_Oscilloscope.jpg)
 
 A few days later - on June 19th - after figuring out the scope and connecting it to the RS-485...
 
-<!-- IMG-11 (src line 474): insert screenshot from oscilloscope - 20260619_Scope -->
+<!-- IMG-12 (src line 475): insert screenshot from oscilloscope - 20260619_Scope -->
 ![insert screenshot from oscilloscope - 20260619_Scope](images/20260619_Scope.jpg)
 
 There's RS-485 traffic.
@@ -523,19 +526,19 @@ Trying that...   ...WC immediately polls 0x0001-55 and 0x88/0xF4!
 
 And now Tesla One says:
 
-<!-- IMG-12 (src line 526): insert 20260621_Detected_No_CTs -->
+<!-- IMG-13 (src line 527): insert 20260621_Detected_No_CTs -->
 ![insert 20260621_Detected_No_CTs](images/20260621_Detected_No_CTs.PNG)
 
 Progress!
 
 But - after configuring the CTs in Tesla One:
 
-<!-- IMG-13 (src line 532): 20260621_FailedToConnect -->
+<!-- IMG-14 (src line 533): 20260621_FailedToConnect -->
 ![20260621_FailedToConnect](images/20260621_FailedToConnect.PNG)
 
 I reset the WC (flip breaker off for 60 seconds) - Tesla One came back with:
 
-<!-- IMG-14 (src line 536): 20260621_Meter_Active -->
+<!-- IMG-15 (src line 537): 20260621_Meter_Active -->
 ![20260621_Meter_Active](images/20260621_Meter_Active.PNG)
 
 ## 6. Up 'n' ~~Down~~ {#section-6}
@@ -615,21 +618,21 @@ We will use solar production, load, powerwall demand (or contribution), and grid
 
 The first thing I learned is that the Tesla system - which I have configured in "Self-Powered" mode, with 20% reserve - prioritizes using excess solar to recharge the Powerwalls, which have typically discharged down to their 20% reserve overnight.
 
-<!-- IMG-15 (src line 615): insert 20260702_PW_Monopolization -->
+<!-- IMG-16 (src line 616): insert 20260702_PW_Monopolization -->
 ![insert 20260702_PW_Monopolization](images/20260702_PW_Monopolization.jpg)
 
 The Powerwall draw from solar is not plotted, but you can see the vehicle charging (e.g. 11:05-11:11 or so) coming straight from the grid, despite lots of solar generation.  The Powerwall seems to be soaking up all the solar.
 
 The whole point of the project is to avoid drawing from the grid - but it's also important to avoid causing vehicle charging to drain the Powerwalls, which we need to power (non-vehicle-charging) loads when it's dark out:
 
-<!-- IMG-16 (src line 621): insert 20260629_afternoon.jpg -->
+<!-- IMG-17 (src line 622): insert 20260629_afternoon.jpg -->
 ![insert 20260629_afternoon.jpg](images/20260629_afternoon.jpg)
 
 There are several undesirable behaviors above - charging powerwall (or the car) off-grid; charging car from powerwall, etc.  If you look carefully, you'll see the power delivered to the car step DOWN sometimes - how is this happening when we didn't think it possible?  We'll get there...
 
 More grid-only charging (at 13:00), including a brief "solar crash" at 16:45 or so:
 
-<!-- IMG-17 (src line 627): insert 20260612_SolarCrash -->
+<!-- IMG-18 (src line 628): insert 20260612_SolarCrash -->
 ![insert 20260612_SolarCrash](images/20260612_SolarCrash.jpg)
 
 As discussed, the control logic is simple - keep increasing charge rate; after exceeding available production, charging stops.  Once we hit the ceiling at least once in a session, there are a lot of ways we could try to estimate available headroom.  But there are a lot of confounding factors - solar production could be rising or falling depending on time of day, a cloud could come along, some other load spike could come along.  But at least we can get started.
@@ -656,7 +659,7 @@ Another reason to signal small increments is that the ramp-up logic is sensitive
 
 I introduced a 90 second waiting period after stop and before restart, just to tamp down clacking on and off of the WC and vehicle contactors.  This is very ugly and doesn't address the core control problem.
 
-<!-- IMG-18 (src line 657): insert 20260624_afternoon -->
+<!-- IMG-19 (src line 658): insert 20260624_afternoon -->
 ![insert 20260624_afternoon](images/20260624_afternoon.jpg)
 
 But I still had faith that - eventually - I could solve the "reduce current" problem, so wasn't going to worry about it yet.   There are hints of the eventual solution where you can see step-downs in charge current... why is this working?
@@ -689,7 +692,7 @@ So I had Claude write some keep-alive code and made sure to re-use the connectio
 
 Here's where things stood at this point:
 
-<!-- IMG-19 (src line 689): insert July 1 screenshot -->
+<!-- IMG-20 (src line 690): insert July 1 screenshot -->
 ![insert July 1 screenshot](images/20260701_unstable_and_solar_crash.jpg)
 
 Since we haven't defined a way to know when the car is going to draw too much solar, we get this sawtooth pattern of oscillations - we draw too much, charging stops, we ramp up again, eventually draw too much, etc.  So we're constantly flipping the actuator - "thunk" - not good.
@@ -716,7 +719,7 @@ I use Claude to write a web service that provides (a) prediction of instantaneou
 
 Even with the above tweaks, I still faced disasters such as the following:
 
-<!-- IMG-20 (src line 717): insert July 24 screenshot -->
+<!-- IMG-21 (src line 718): insert July 24 screenshot -->
 ![insert July 24 screenshot](images/20260724_ugly_behavior.jpg)
 
 In the morning, the powerwalls are charging hard and out-prioritizing the car for excess solar.  While we have no "down" lever... we see a downward ramp in "actual_w(atts)"!  what's going on here?  (hold that thought).  In any case, we keep exceeding the available solar, force grid import, and then back off.
@@ -763,7 +766,7 @@ With predicted maximum solar production in hand, we can then build in a buffer -
 
 I implemented this on July 26th:
 
-<!-- IMG-21 (src line 765): insert july 26th image -->
+<!-- IMG-22 (src line 766): insert july 26th image -->
 ![insert july 26th image](images/20260726_solar_prediction.jpg)
 
 The early charge session - 13:45 or so until I unplugged the car at 15:34 - is pretty noisy.  I can't remember whether there was an implementation bug - there had been plenty by this point, but as I had earlier had Claude implement a syslog writer to a syslog host, diagnosing little problems is pretty easy.
@@ -809,14 +812,14 @@ Back in June, I instructed Claude to build a test harness, to try this out in a 
 
 Meanwhile, as we've seen in graphs from June 24th, June 29th, and July 24th, the solution was staring me in the face.  I just hadn't looked in  the right places - I produced all of those graphs after the fact, while writing this blog post, based on retrospective queries over the system behavior.
 
-<!-- IMG-22 (src line 812): insert the July 24th graph again -->
+<!-- IMG-23 (src line 813): insert the July 24th graph again -->
 ![insert the July 24th graph again](images/20260724_ugly_behavior.jpg)
 
 The above graph illustrates it pretty well -  the control algorithm is oscillating so wildly trying to stop and restart charging that it actually - completely accidentally - implements this technique.  Trying to restart charging before the previous "stop" command was able to bring current to zero resulted in a **gradual reduction in charge current.**
 
 Later, with more careful prompting, I got Claude to build a test rig that produced the following:
 
-<!-- IMG-23 (src line 818): insert July 23rd 15:30 graph. -->
+<!-- IMG-24 (src line 819): insert July 23rd 15:30 graph. -->
 ![insert July 23rd 15:30 graph.](images/20260723_down.jpg)
 
 Not too elegant, or with that many data points, but the result is clear - we can command charge current to decrease - the missing piece!
@@ -833,12 +836,12 @@ The careful reader will note that the 10A and 20A timings don't seem to comport 
 
 Here's the system working well; The morning and afternoon are a good contrast.  In the morning, I had accidentally set the system into a mode where it was not trying to predict available solar - but the afternoon is great with available solar prediction and current reduction logic enabled.
 
-<!-- IMG-24 (src line 835): insert 20260730_predictive -->
+<!-- IMG-25 (src line 836): insert 20260730_predictive -->
 ![insert 20260730_predictive](images/20260730_predictive.jpg)
 
 The next day looks even better:
 
-<!-- IMG-25 (src line 839): 20260731 chart -->
+<!-- IMG-26 (src line 840): 20260731 chart -->
 ![20260731 chart](images/20260731_working.jpg)
 
 ## 10. What now? {#section-10}

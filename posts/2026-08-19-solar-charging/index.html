@@ -71,10 +71,15 @@
 <p>OK, how about the Tesla Wall Connector / Powerwall installation? Tesla offers “charge on solar” right? But that’s a feature of the Tesla vehicle when connected to a Tesla energy system - <a href="https://www.tesla.com/support/tesla-app/charge-on-solar" class="uri">https://www.tesla.com/support/tesla-app/charge-on-solar</a> .</p>
 <p>Maybe it’s not so bad to just plug in the Rivian and let it use all the solar available at any given moment, pulling from the grid when necessary? Maybe manually adjust down the Rivian charge rate (Rivian will remember max charge rate on a location-by-location basis) to try to stay below available solar on clear days?</p>
 <p>That sounds ok in theory, but in practice, I get this:</p>
-<!-- IMG-02 (src line 79): 20260604_solar_crash and 20260604_solar_crash_2 -->
+<!-- IMG-02 (src line 79): 20260604_solar_crash -->
 <figure>
-<img src="images/20260604_solar_crash.PNG" alt="20260604_solar_crash and 20260604_solar_crash_2" />
-<figcaption aria-hidden="true">20260604_solar_crash and 20260604_solar_crash_2</figcaption>
+<img src="images/20260604_solar_crash.PNG" alt="20260604_solar_crash" />
+<figcaption aria-hidden="true">20260604_solar_crash</figcaption>
+</figure>
+<!-- IMG-03 (src line 80): 20260604_solar_crash_2 -->
+<figure>
+<img src="images/20260604_solar_crash_2.PNG" alt="20260604_solar_crash_2" />
+<figcaption aria-hidden="true">20260604_solar_crash_2</figcaption>
 </figure>
 <p>It seems as though the logic in the Tesla setup doesn’t like to power the car partially on solar - it’s all, or nothing - with “nothing” meaning we pull up to 9.6kW from the grid. AND sometimes commencing a charge “crashes” solar, dropping solar production to nothing. Pretty poor behavior.</p>
 <p>Something needs to be done - some automation to control the Rivian’s charge rate using available control paths and telemetry…</p>
@@ -87,7 +92,7 @@
 <h3 id="how-to-dig-your-own-rabbit-hole">How to dig your own rabbit-hole</h3>
 <p>I’ve had some success (and fun!) with IoT-related projects based on Olimex’s single-board platform built around the Espressif ESP32 SoC. The ESP32 is easy to program - there are a lot of existing tools and libraries that target it, and you can find ESP32-based prototyping platforms that expose quite a few I/O pins and with good connectivity options.</p>
 <p>After completing two other projects - one to monitor an ultrasonic water flowmeter over RS-485, another to monitor septic pump run cycles (with just a current switch), I’ve settled specifically on Olimex’s ESP32-PoE-ISO SKU - <a href="https://www.olimex.com/Products/IoT/ESP32/ESP32-POE-ISO/" class="uri">https://www.olimex.com/Products/IoT/ESP32/ESP32-POE-ISO/</a></p>
-<!-- IMG-03 (src line 104): photo of Olimex -->
+<!-- IMG-04 (src line 105): photo of Olimex -->
 <figure>
 <img src="images/ESP32-POE-ISO-1.jpg" alt="photo of Olimex" />
 <figcaption aria-hidden="true">photo of Olimex</figcaption>
@@ -100,12 +105,12 @@
 <p>For the first of these projects - the septic pump sensor - I instructed Claude to generate a web server that Telegraf could poll for telemetry (on “/metrics”), enable configuring runtime controls via HTTP GET, and handle the hardware sensor by polling the relevant GPIO pin. After iterating for a few hours spread over several days, I had a working setup. Claude’s code is straightforward, although as you likely have experienced, it can be hard to keep Claude on track regarding the high-level design and invariants, or preventing code sprawl. I run Visual Studio and Claude Code in a container to help place some limits on the coding agent’s reach; this slows things down a little since I have a manually-triggered process to transfer external information in (e.g. syslog, influx data for debug purposes) and to allow new binaries to come out. Obviously, I’m not running a dozen “individual contributor” agents under the supervision of “project lead” agents, with agent management frameworks, long-running coding sessions, and so on…</p>
 <p>The Olimex unit is small - Olimex will sell you a little 3D-printed enclosure that measures 115mm x 33mm x 22mm (4.5” x 1.3” x .9”) <a href="https://www.mouser.com/en/ProductDetail/Olimex-Ltd/BOX-ESP32-POE-ISO-EA-F?qs=%252BXxaIXUDbq1soqiVeHsY1g%3D%3D" class="uri">https://www.mouser.com/en/ProductDetail/Olimex-Ltd/BOX-ESP32-POE-ISO-EA-F?qs=%252BXxaIXUDbq1soqiVeHsY1g%3D%3D</a> . For my septic monitor project, that’s small enough to tuck within the existing weathertight septic control enclosure; all I needed was a suitable cable gland to enable the PoE connection, and some direct-burial ethernet cable.</p>
 <p>I duplicated that overall design for the water flow monitor, adding a MAX485 RS-485 transceiver (<a href="https://www.amazon.com/dp/B00NIOLNAG" class="uri">https://www.amazon.com/dp/B00NIOLNAG</a>):</p>
-<!-- IMG-04 (src line 122): Insert MAX485_JiuWu -->
+<!-- IMG-05 (src line 123): Insert MAX485_JiuWu -->
 <figure>
 <img src="images/MAX485_JiuWu.jpg" alt="Insert MAX485_JiuWu" />
 <figcaption aria-hidden="true">Insert MAX485_JiuWu</figcaption>
 </figure>
-<!-- IMG-05 (src line 123): Insert MAX485_mine -->
+<!-- IMG-06 (src line 124): Insert MAX485_mine -->
 <figure>
 <img src="images/MAX485_mine.jpg" alt="Insert MAX485_mine" />
 <figcaption aria-hidden="true">Insert MAX485_mine</figcaption>
@@ -370,14 +375,14 @@
 <p>Some internet research suggested that my installer would have to “unlock” or somehow enable a configuration interface for the WC to allow me to set up with remote meter / Neurio connection. Or that you had to obtain the “Tesla One” app and be authorized to use it. THIS IS ONLY PARTLY TRUE. I reached out to my installer, and they pointed out that “Tesla One” is on the app store, and anyone can use it.</p>
 <p>“Tesla One” is not very complicated, but it’s a pain in the neck to attach Tesla One to the WC… you need to be physically near the WC and join the app to the WC’s captive wifi - which, of course, disconnects the WC from whatever network you had it on.</p>
 <p>Once I got there, I scrolled through the options to “Remote Meter” and discovered… “not detected”.</p>
-<!-- IMG-06 (src line 353): insert screenshot of Tesla One menu and screenshot of "Meter not detected" message - this is 20260616_GPM.PNG. -->
+<!-- IMG-07 (src line 354): insert screenshot of Tesla One menu and screenshot of "Meter not detected" message - this is 20260616_GPM.PNG. -->
 <figure>
 <img src="images/20260616_GPM.PNG" alt="insert screenshot of Tesla One menu and screenshot of “Meter not detected” message - this is 20260616_GPM.PNG." />
 <figcaption aria-hidden="true">insert screenshot of Tesla One menu and screenshot of “Meter not detected” message - this is 20260616_GPM.PNG.</figcaption>
 </figure>
 <p>Ugh. Looks like I’ll have to wire it up first.</p>
 <p>Also… note the menu option for something called “Group Power Management” - “Controlled by the leader” (TGxxxxx..) - I surmise that the Tesla Gateway (“TG…”) was likely to try to prevent anything else from controlling the WC. I couldn’t turn it off:</p>
-<!-- IMG-07 (src line 359): insert screenshot of "Connect to the leader" - 20260617_GPMConnectToLeader.PNG -->
+<!-- IMG-08 (src line 360): insert screenshot of "Connect to the leader" - 20260617_GPMConnectToLeader.PNG -->
 <figure>
 <img src="images/20260617_GPMConnectToLeader.PNG" alt="insert screenshot of “Connect to the leader” - 20260617_GPMConnectToLeader.PNG" />
 <figcaption aria-hidden="true">insert screenshot of “Connect to the leader” - 20260617_GPMConnectToLeader.PNG</figcaption>
@@ -386,7 +391,7 @@
 <p>I don’t know whether my guess about “Group Power Management” is correct, but after isolating the WC from the internet (per above) and rebooting (and maybe a factory reset? can’t remember), the “Group Power Management” indicator went away.</p>
 <p>Having set up an RS-485 connection to an Olimex board via a MAX485 on a previous project, the RS-485 part was straightforward. As discussed at the outset, I’m not giving anyone advice on how to do something like open up a Tesla Wall Connector.</p>
 <p>With some nice shielded cable in place for the RS-485 connection… let’s try this again:</p>
-<!-- IMG-08 (src line 369): insert 20260616_MeterNotDetected -->
+<!-- IMG-09 (src line 370): insert 20260616_MeterNotDetected -->
 <figure>
 <img src="images/20260616_MeterNotDetected.jpg" alt="insert 20260616_MeterNotDetected" />
 <figcaption aria-hidden="true">insert 20260616_MeterNotDetected</figcaption>
@@ -440,7 +445,7 @@ Total current       - the desired current, in amps
 <p>Claude wrote usable, working code, but I only figured out much later and after a lot of debugging, breaker-flipping, and oscilloscoping that the research was incomplete and based on some misconceptions (presuming an LLM can have a “conception” to begin with…)</p>
 <p>Here’s what happened.</p>
 <p>After flashing the ESP32, I started up Tesla One to see if we’ve got a working remote meter emulator:</p>
-<!-- IMG-09 (src line 455): insert 20260617_MeterNotDetected -->
+<!-- IMG-10 (src line 456): insert 20260617_MeterNotDetected -->
 <figure>
 <img src="images/20260617_MeterNotDetected.PNG" alt="insert 20260617_MeterNotDetected" />
 <figcaption aria-hidden="true">insert 20260617_MeterNotDetected</figcaption>
@@ -455,13 +460,13 @@ Total current       - the desired current, in amps
 </ul>
 <p>In retrospect, adding better diagnostics on the RS-485 handling would have been a good idea, but it just seemed like something fundamental might be wrong at the physical layer - is the MODBUS/RS-485 connection alive? Which would be hard to diagnose without an oscilloscope… something that I didn’t have.</p>
 <p>Turns out there are some very inexpensive yet capable little oscilloscopes out there. I’m pretty paranoid about cheap electronics - who knows what code lies therein (and who is behind it) - but these little gizmos aren’t network-enabled, so the overall threat seems minimal. I bought “FNIRSI” unit from Amazon - <a href="https://www.amazon.com/dp/B0FDPYNQBC" class="uri">https://www.amazon.com/dp/B0FDPYNQBC</a> .</p>
-<!-- IMG-10 (src line 470): insert FNIRSI scope marketing image -->
+<!-- IMG-11 (src line 471): insert FNIRSI scope marketing image -->
 <figure>
 <img src="images/FNIRSI_Oscilloscope.jpg" alt="insert FNIRSI scope marketing image" />
 <figcaption aria-hidden="true">insert FNIRSI scope marketing image</figcaption>
 </figure>
 <p>A few days later - on June 19th - after figuring out the scope and connecting it to the RS-485…</p>
-<!-- IMG-11 (src line 474): insert screenshot from oscilloscope - 20260619_Scope -->
+<!-- IMG-12 (src line 475): insert screenshot from oscilloscope - 20260619_Scope -->
 <figure>
 <img src="images/20260619_Scope.jpg" alt="insert screenshot from oscilloscope - 20260619_Scope" />
 <figcaption aria-hidden="true">insert screenshot from oscilloscope - 20260619_Scope</figcaption>
@@ -497,20 +502,20 @@ g_sunspec_regs[7] = 0x6300;   // &quot;c&quot;
 <p>Further, the length of the Sunspec block is 66 words, not 65 words; Claude had gotten confused on the register numbering!</p>
 <p>Trying that… …WC immediately polls 0x0001-55 and 0x88/0xF4!</p>
 <p>And now Tesla One says:</p>
-<!-- IMG-12 (src line 526): insert 20260621_Detected_No_CTs -->
+<!-- IMG-13 (src line 527): insert 20260621_Detected_No_CTs -->
 <figure>
 <img src="images/20260621_Detected_No_CTs.PNG" alt="insert 20260621_Detected_No_CTs" />
 <figcaption aria-hidden="true">insert 20260621_Detected_No_CTs</figcaption>
 </figure>
 <p>Progress!</p>
 <p>But - after configuring the CTs in Tesla One:</p>
-<!-- IMG-13 (src line 532): 20260621_FailedToConnect -->
+<!-- IMG-14 (src line 533): 20260621_FailedToConnect -->
 <figure>
 <img src="images/20260621_FailedToConnect.PNG" alt="20260621_FailedToConnect" />
 <figcaption aria-hidden="true">20260621_FailedToConnect</figcaption>
 </figure>
 <p>I reset the WC (flip breaker off for 60 seconds) - Tesla One came back with:</p>
-<!-- IMG-14 (src line 536): 20260621_Meter_Active -->
+<!-- IMG-15 (src line 537): 20260621_Meter_Active -->
 <figure>
 <img src="images/20260621_Meter_Active.PNG" alt="20260621_Meter_Active" />
 <figcaption aria-hidden="true">20260621_Meter_Active</figcaption>
@@ -611,21 +616,21 @@ g_sunspec_regs[7] = 0x6300;   // &quot;c&quot;
 }</code></pre>
 <p>We will use solar production, load, powerwall demand (or contribution), and grid demand figures from Teslemetry to make control decisions.</p>
 <p>The first thing I learned is that the Tesla system - which I have configured in “Self-Powered” mode, with 20% reserve - prioritizes using excess solar to recharge the Powerwalls, which have typically discharged down to their 20% reserve overnight.</p>
-<!-- IMG-15 (src line 615): insert 20260702_PW_Monopolization -->
+<!-- IMG-16 (src line 616): insert 20260702_PW_Monopolization -->
 <figure>
 <img src="images/20260702_PW_Monopolization.jpg" alt="insert 20260702_PW_Monopolization" />
 <figcaption aria-hidden="true">insert 20260702_PW_Monopolization</figcaption>
 </figure>
 <p>The Powerwall draw from solar is not plotted, but you can see the vehicle charging (e.g. 11:05-11:11 or so) coming straight from the grid, despite lots of solar generation. The Powerwall seems to be soaking up all the solar.</p>
 <p>The whole point of the project is to avoid drawing from the grid - but it’s also important to avoid causing vehicle charging to drain the Powerwalls, which we need to power (non-vehicle-charging) loads when it’s dark out:</p>
-<!-- IMG-16 (src line 621): insert 20260629_afternoon.jpg -->
+<!-- IMG-17 (src line 622): insert 20260629_afternoon.jpg -->
 <figure>
 <img src="images/20260629_afternoon.jpg" alt="insert 20260629_afternoon.jpg" />
 <figcaption aria-hidden="true">insert 20260629_afternoon.jpg</figcaption>
 </figure>
 <p>There are several undesirable behaviors above - charging powerwall (or the car) off-grid; charging car from powerwall, etc. If you look carefully, you’ll see the power delivered to the car step DOWN sometimes - how is this happening when we didn’t think it possible? We’ll get there…</p>
 <p>More grid-only charging (at 13:00), including a brief “solar crash” at 16:45 or so:</p>
-<!-- IMG-17 (src line 627): insert 20260612_SolarCrash -->
+<!-- IMG-18 (src line 628): insert 20260612_SolarCrash -->
 <figure>
 <img src="images/20260612_SolarCrash.jpg" alt="insert 20260612_SolarCrash" />
 <figcaption aria-hidden="true">insert 20260612_SolarCrash</figcaption>
@@ -686,7 +691,7 @@ g_sunspec_regs[7] = 0x6300;   // &quot;c&quot;
 <p>This is usually immaterial, since we are raising the target slowly, with a 10s polling interval.</p>
 <p>Another reason to signal small increments is that the ramp-up logic is sensitive to the CT value from /vitals going stale - the car draw can overshoot the desired target if /vitals data is too old. This is because we compute the served CT using the car’s current from vitals (which is stale), but the WC computes headroom using its own live current… as the live car current ramps up, if we keep serving the same value based on stale vitals, the WC will keep providing more and more current, in a positive feedback loop. This is why a fresh “actual” current value from /vitals is important; we need to exactly negate the WC’s live current value.</p>
 <p>I introduced a 90 second waiting period after stop and before restart, just to tamp down clacking on and off of the WC and vehicle contactors. This is very ugly and doesn’t address the core control problem.</p>
-<!-- IMG-18 (src line 657): insert 20260624_afternoon -->
+<!-- IMG-19 (src line 658): insert 20260624_afternoon -->
 <figure>
 <img src="images/20260624_afternoon.jpg" alt="insert 20260624_afternoon" />
 <figcaption aria-hidden="true">insert 20260624_afternoon</figcaption>
@@ -706,7 +711,7 @@ g_sunspec_regs[7] = 0x6300;   // &quot;c&quot;
 <p>Theories abound in the community as to what’s going on, but I am guessing resource exhaustion of some kind.</p>
 <p>So I had Claude write some keep-alive code and made sure to re-use the connection each time. Nonetheless, I was never able to get polling more frequent than every ten seconds. Vitals readings are reliable now at 10s intervals, although I will get timeouts for up to five minutes after rebooting the ESP32 - even though I always close the connection properly before the reboot. I may try some of the other suggestions I’ve heard - move it to my 2.5Ghz network, deactivate mixed WPA2/3….</p>
 <p>Here’s where things stood at this point:</p>
-<!-- IMG-19 (src line 689): insert July 1 screenshot -->
+<!-- IMG-20 (src line 690): insert July 1 screenshot -->
 <figure>
 <img src="images/20260701_unstable_and_solar_crash.jpg" alt="insert July 1 screenshot" />
 <figcaption aria-hidden="true">insert July 1 screenshot</figcaption>
@@ -723,7 +728,7 @@ g_sunspec_regs[7] = 0x6300;   // &quot;c&quot;
 <p><a href="#s9-what-goes-up-must-come-down-tldr">Skip ahead — DR the next TL →</a></p>
 <h3 id="weather-or-not">Weather, or not</h3>
 <p>Even with the above tweaks, I still faced disasters such as the following:</p>
-<!-- IMG-20 (src line 717): insert July 24 screenshot -->
+<!-- IMG-21 (src line 718): insert July 24 screenshot -->
 <figure>
 <img src="images/20260724_ugly_behavior.jpg" alt="insert July 24 screenshot" />
 <figcaption aria-hidden="true">insert July 24 screenshot</figcaption>
@@ -776,7 +781,7 @@ g_sunspec_regs[7] = 0x6300;   // &quot;c&quot;
 <p>I have to say, this is pretty *#%% impressive. I wouldn’t have even taken on such an effort; Claude made it more than easy.</p>
 <p>With predicted maximum solar production in hand, we can then build in a buffer - 2kW to start with - to absorb any prediction error and load transients, and see how we do.</p>
 <p>I implemented this on July 26th:</p>
-<!-- IMG-21 (src line 765): insert july 26th image -->
+<!-- IMG-22 (src line 766): insert july 26th image -->
 <figure>
 <img src="images/20260726_solar_prediction.jpg" alt="insert july 26th image" />
 <figcaption aria-hidden="true">insert july 26th image</figcaption>
@@ -808,14 +813,14 @@ g_sunspec_regs[7] = 0x6300;   // &quot;c&quot;
 <p>I figured - what if we signal 2A over Max Conductor Limit, and - within a couple seconds - command a new, lower, charge rate? Like catching a falling knife.</p>
 <p>Back in June, I instructed Claude to build a test harness, to try this out in a controlled fashion. <del>Claude completely messed this up on the first try</del> I prompted Claude poorly, implementing a scheme requiring manual intervention, careful timing, and so on. Given how much other work needed to be done (solar prediction), and the sporadic free time available for the project, I put the idea aside.</p>
 <p>Meanwhile, as we’ve seen in graphs from June 24th, June 29th, and July 24th, the solution was staring me in the face. I just hadn’t looked in the right places - I produced all of those graphs after the fact, while writing this blog post, based on retrospective queries over the system behavior.</p>
-<!-- IMG-22 (src line 812): insert the July 24th graph again -->
+<!-- IMG-23 (src line 813): insert the July 24th graph again -->
 <figure>
 <img src="images/20260724_ugly_behavior.jpg" alt="insert the July 24th graph again" />
 <figcaption aria-hidden="true">insert the July 24th graph again</figcaption>
 </figure>
 <p>The above graph illustrates it pretty well - the control algorithm is oscillating so wildly trying to stop and restart charging that it actually - completely accidentally - implements this technique. Trying to restart charging before the previous “stop” command was able to bring current to zero resulted in a <strong>gradual reduction in charge current.</strong></p>
 <p>Later, with more careful prompting, I got Claude to build a test rig that produced the following:</p>
-<!-- IMG-23 (src line 818): insert July 23rd 15:30 graph. -->
+<!-- IMG-24 (src line 819): insert July 23rd 15:30 graph. -->
 <figure>
 <img src="images/20260723_down.jpg" alt="insert July 23rd 15:30 graph." />
 <figcaption aria-hidden="true">insert July 23rd 15:30 graph.</figcaption>
@@ -833,13 +838,13 @@ g_sunspec_regs[7] = 0x6300;   // &quot;c&quot;
 </ul>
 <p>The careful reader will note that the 10A and 20A timings don’t seem to comport with J1772’s requirement that current reach zero within three seconds of EVSE STOP or reach the selected level within five seconds. I measured empirically that the Rivian takes 18-25 seconds to reach a zero charge level from 39A after signaling the WC that we’re 2A over limit. Maybe the WC isn’t treating this as an actual “EVSE STOP” as defined in the J1772 spec. Or maybe the Rivian isn’t strictly compliant. Or maybe something else. Nonetheless, that relatively long, smooth, 1.5A/second down-ramp provides a way to reliably reduce charge current.</p>
 <p>Here’s the system working well; The morning and afternoon are a good contrast. In the morning, I had accidentally set the system into a mode where it was not trying to predict available solar - but the afternoon is great with available solar prediction and current reduction logic enabled.</p>
-<!-- IMG-24 (src line 835): insert 20260730_predictive -->
+<!-- IMG-25 (src line 836): insert 20260730_predictive -->
 <figure>
 <img src="images/20260730_predictive.jpg" alt="insert 20260730_predictive" />
 <figcaption aria-hidden="true">insert 20260730_predictive</figcaption>
 </figure>
 <p>The next day looks even better:</p>
-<!-- IMG-25 (src line 839): 20260731 chart -->
+<!-- IMG-26 (src line 840): 20260731 chart -->
 <figure>
 <img src="images/20260731_working.jpg" alt="20260731 chart" />
 <figcaption aria-hidden="true">20260731 chart</figcaption>
