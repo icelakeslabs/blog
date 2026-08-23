@@ -13,6 +13,15 @@ images and feed.
 
     pandoc      (any 2.x or 3.x; needs pipe_tables, strikeout, header_attributes)
     python3     (stdlib only — no pip installs)
+    exiftool    (strip-exif.sh)      Debian: libimage-exiftool-perl
+    ImageMagick (redact.sh)          Debian: imagemagick
+
+**Why 2.x still works:** pandoc 2.x rejects an identifier that starts with a
+digit — it leaves the literal `{#1-foo}` in the heading text and invents its own
+id, silently breaking every link to it. Sections here are numbered, so
+`lib/convert.py:slug()` prefixes digit-leading slugs with `s`. Do not "simplify"
+that away; it is what keeps the two pandoc majors producing the same anchors.
+`postprocess.py` will warn about `unresolved anchors` if it ever regresses.
 
 ## Layout
 
@@ -191,6 +200,40 @@ typos and names entered before the file was copied in.
 
 Every build prints a count of unassigned slots and writes `images-todo.txt`.
 Unassigned slots render with "UNASSIGNED" in the alt text.
+
+## Before publishing images
+
+The repo is public and **git history is permanent** — an image redacted in a
+later commit is still fetchable in the earlier one. Clean images *before* the
+commit that introduces them. There are two halves, and they need two tools.
+
+**1. Metadata you cannot see** — `./strip-exif.sh [slug]`
+
+Strips GPS, camera make/model, serial and timestamps; keeps Orientation so
+photos don't rotate. Phone photos routinely carry the coordinates of wherever
+they were taken. `build.sh` warns if any image still has such metadata, so a
+forgotten run doesn't sail past silently.
+
+**2. What is visible in the pixels** — your eyes, then `./redact.sh`
+
+No tool can find this for you, and `grep` cannot see into an image. Open every
+screenshot and look for device serials, app or site names (often a street
+name), Wi-Fi SSIDs (wardriving databases map SSID to coordinates), other
+hardware IDs, account emails, QR codes, and browser URL bars or hostnames.
+
+```
+./redact.sh posts/<slug>/images/<file> <x1,y1,x2,y2> [<x1,y1,x2,y2> ...]
+```
+
+It fills the region opaque and re-encodes, so the original pixels are gone
+rather than covered, then re-strips metadata (image editors write fresh EXIF on
+save). Look at the result afterward — a misplaced box hides nothing and the
+exit code won't tell you.
+
+Assume every identifier appears in **more than one** image, and scroll each
+image to the bottom: in this repo's first post one serial appeared in four
+screenshots, and two instances sat below the fold on pages whose title bars had
+already been reviewed.
 
 ## review.txt
 

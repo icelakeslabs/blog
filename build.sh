@@ -34,4 +34,18 @@ for dir in "$ROOT"/posts/*/; do
 done
 
 python3 "$LIB/index_gen.py"
+
+# Passive privacy guard: catch images that never went through strip-exif.sh.
+# Only sees METADATA — it cannot tell whether a serial is legible in the pixels.
+# That half is your eyes plus ./redact.sh; see README "Before publishing images".
+if command -v exiftool >/dev/null 2>&1; then
+  dirty="$(exiftool -q -r -ext jpg -ext jpeg -ext png -ext gif \
+    -if '$GPSLatitude or $GPSLongitude or $Make or $Model or $SerialNumber' \
+    -p '$FilePath' "$ROOT"/posts/*/images/ 2>/dev/null || true)"
+  if [ -n "$dirty" ]; then
+    echo "WARNING — these images still carry GPS/camera metadata; run ./strip-exif.sh:" >&2
+    echo "$dirty" >&2
+  fi
+fi
+
 echo "built."

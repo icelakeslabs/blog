@@ -55,3 +55,15 @@ EOF
 echo "created posts/$DATE-$SLUG/"
 echo "  next: edit its src.txt, add images/, then  ./build.sh $SLUG"
 echo "  it stays hidden (draft: true) until you set draft: false in meta.txt"
+cat <<'REMINDER'
+
+  ── BEFORE YOU PUBLISH IMAGES ── (this repo is public; git history is forever)
+  1. ./strip-exif.sh <slug>   removes metadata you CANNOT see (GPS, camera, serial)
+  2. LOOK AT EVERY SCREENSHOT  for what IS visible, then ./redact.sh to black it out:
+       device serial numbers   app/site names (often your street)
+       Wi-Fi SSID             account email      street address
+       QR codes               browser URL bars / hostnames
+     An identifier usually appears in MORE THAN ONE screenshot — check them all,
+     and scroll the whole image, not just the title bar.
+  Do this BEFORE the first commit: redacting later leaves the original in history.
+REMINDER
