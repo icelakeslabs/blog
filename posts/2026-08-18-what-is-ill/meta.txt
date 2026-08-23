@@ -1,0 +1,17 @@
+# Post metadata. Date and slug come from the directory name (YYYY-MM-DD-slug).
+# Title is line 1 of src.txt; subtitle defaults to line 3 unless set here.
+summary: What Ice Lakes Labs is, and why a retired research-lab director keeps finding research problems around the house.
+tags: about, ice lakes labs
+draft: false
+
+# This is the intro piece — it stays at the top of the landing page no matter
+# what dates later posts carry. Pinning beats forward-dating: the date is baked
+# into the URL and the permanent feed guid.
+pin: true
+
+# Two headings; a table of contents would be noise.
+toc: false
+
+# No subtitle. The key must be present-but-empty, or line 3 of src.txt ("TL;DR")
+# would be advertised as the subtitle on the landing page.
+subtitle:

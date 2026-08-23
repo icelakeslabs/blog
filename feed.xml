@@ -5,6 +5,13 @@
   <link>https://blog.icelakeslabs.com/</link>
   <description>Notes from an over-instrumented house.</description>
   <item>
+    <title>What&#x27;s &quot;Ice Lakes Labs&quot;?</title>
+    <link>https://blog.icelakeslabs.com/posts/2026-08-18-what-is-ill/</link>
+    <guid isPermaLink="true">https://blog.icelakeslabs.com/posts/2026-08-18-what-is-ill/</guid>
+    <pubDate>Tue, 18 Aug 2026 12:00:00 +0000</pubDate>
+    <description>What Ice Lakes Labs is, and why a retired research-lab director keeps finding research problems around the house.</description>
+  </item>
+  <item>
     <title>Adventures in ESP32-based automation - Olimex and Claude take on Tesla and PG&amp;E</title>
     <link>https://blog.icelakeslabs.com/posts/2026-08-19-solar-charging/</link>
     <guid isPermaLink="true">https://blog.icelakeslabs.com/posts/2026-08-19-solar-charging/</guid>
