@@ -16,7 +16,7 @@ ROOT = pathlib.Path(".")
 POSTS = ROOT / "posts"
 SITE_TITLE = "Ice Lakes Labs"
 SITE_TAGLINE = "Notes from an over-instrumented house."
-SITE_URL = "https://example.com"          # set to your real domain
+SITE_URL = "https://blog.icelakeslabs.com"   # must match the CNAME file + DNS
 
 def read_meta(d):
     meta = {}
