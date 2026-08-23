@@ -113,6 +113,21 @@ come from the directory name, so
 Set `draft: true` to build a post without listing it on the index or in the
 feed — note it is still publicly reachable if someone knows the URL.
 
+### meta.txt keys
+
+| key | default | effect |
+|---|---|---|
+| `summary` | — | one-liner on the landing page and in the RSS `<description>` |
+| `tags` | — | comma-separated |
+| `draft` | `false` | `true` = built, but kept off the index and feed. **A missing `meta.txt` means the post is LIVE** — the flag is opt-in, so scaffold with `new-post.sh` rather than by hand. |
+| `pin` | `false` | `true` = sorts above everything on the landing page regardless of date. Use for an evergreen intro. **Prefer this to forward-dating**: the date is baked into the URL and the permanent feed `guid`, so faking it to win the sort costs a stable link forever. |
+| `toc` | `true` | `false` = no table of contents for that post. A short post with two headings gets noise, not navigation. |
+| `subtitle` | line 3 of `src.txt` | overrides the default. Present-but-empty (`subtitle:`) means *no subtitle* — needed when line 3 is a real heading like `TL;DR`, which would otherwise be advertised as the subtitle. |
+
+A post with no subtitle also changes where the TOC lands: `postprocess.py` puts
+it after the title *and* subtitle when both exist, and falls back to just after
+the `</h1>`. Either way it never renders above the title.
+
 **Before publishing, set `SITE_URL` in `lib/index_gen.py`** to your real
 domain, or the feed will contain example.com links. The build warns until you
 do. `SITE_TITLE` and `SITE_TAGLINE` are alongside it.

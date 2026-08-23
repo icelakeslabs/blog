@@ -23,11 +23,17 @@ if m:
         toc = ('<nav id="TOC" role="doc-toc">\n'
                + toc[inner_start:inner_end].rstrip() + "\n</nav>\n")
     h = h.replace(original, "")
+    # Preferred: place the TOC after the title AND its subtitle paragraph.
     anchor = re.search(r'<h1[^>]*>.*?</h1>\s*<p>.*?</p>', h, re.S)
+    if not anchor:
+        # A post with no subtitle (line 3 of src.txt is a heading, or absent):
+        # settle for just after </h1>. Putting the TOC at the very top of <body>
+        # renders it ABOVE the post title, which looks broken.
+        anchor = re.search(r'<h1[^>]*>.*?</h1>', h, re.S)
     if anchor:
         h = h[:anchor.end()] + "\n" + toc + h[anchor.end():]
     else:
-        print("  postprocess: WARNING — title block not found; TOC left at top")
+        print("  postprocess: WARNING — no <h1> found; TOC left at top")
         h = h.replace("<body>", "<body>\n" + toc, 1)
 
 nav = '<p class="back-link"><a href="../../">&larr; all posts</a></p>\n'

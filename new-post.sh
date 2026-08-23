@@ -46,10 +46,18 @@ EOF
 
 cat > "$DIR/meta.txt" <<EOF
 # Post metadata. Date and slug come from the directory name (YYYY-MM-DD-slug).
-# Title and subtitle are read from the first and third lines of src.txt.
+# Title is line 1 of src.txt; subtitle is line 3 unless overridden below.
 summary: One-sentence summary for the landing page and RSS feed.
 tags: tag1, tag2
 draft: true
+
+# Optional (see README "meta.txt keys"):
+# pin: true       sort above everything regardless of date (evergreen intro).
+#                 Prefer this to forward-dating — the date is in the URL and the
+#                 permanent feed guid.
+# toc: false      no table of contents (a short post doesn't need one).
+# subtitle:       present-but-empty means NO subtitle, for when line 3 of
+#                 src.txt is a real heading like "TL;DR".
 EOF
 
 echo "created posts/$DATE-$SLUG/"

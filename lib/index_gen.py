@@ -47,16 +47,30 @@ def collect():
             "date": datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3))),
             "slug": m.group(4),
             "title": lines[0].strip() if lines else d.name,
-            "subtitle": lines[2].strip() if len(lines) > 2 else "",
+            # Subtitle defaults to line 3 of src.txt, but meta.txt wins when the
+            # key is present — including "subtitle:" with nothing after it, which
+            # is how a post says "I have no subtitle". Needed because a post whose
+            # line 3 is a real heading (e.g. "TL;DR") would otherwise advertise
+            # that as its subtitle on the landing page.
+            "subtitle": (meta["subtitle"] if "subtitle" in meta
+                         else (lines[2].strip() if len(lines) > 2 else "")),
             "summary": meta.get("summary", ""),
             "tags": [t.strip() for t in meta.get("tags", "").split(",") if t.strip()],
             "draft": meta.get("draft", "").lower() == "true",
+            # Pinned posts sort above everything regardless of date. Use this for
+            # an evergreen intro rather than back/forward-dating a post: the date
+            # is baked into the URL and the permanent feed guid, so faking it to
+            # win the sort costs you a stable link forever.
+            "pin": meta.get("pin", "").lower() == "true",
             "words": len(src.read_text(encoding="utf-8").split()),
         })
     return out
 
 posts = collect()
 live = [p for p in posts if not p["draft"]]
+# collect() already yields newest-first; a stable sort on pin alone preserves
+# that order within each group.
+live.sort(key=lambda p: not p["pin"])
 
 # ---------- index.html ------------------------------------------------------
 items = []

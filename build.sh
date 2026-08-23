@@ -19,11 +19,18 @@ for dir in "$ROOT"/posts/*/; do
     python3 "$LIB/manifest.py"
     python3 "$LIB/convert.py"
 
+    # Per-post table of contents. Default ON; a post opts out with "toc: false"
+    # in meta.txt — a short post with two headings gets noise, not navigation.
+    TOC=(--toc --toc-depth=2)
+    if [ -f meta.txt ] && grep -qiE '^[[:space:]]*toc:[[:space:]]*(false|no|off)' meta.txt; then
+      TOC=()
+    fi
+
     pandoc post.md \
       --from=markdown+smart+pipe_tables+strikeout+header_attributes \
       --to=html5 \
       --standalone --wrap=none \
-      --toc --toc-depth=2 \
+      ${TOC[@]+"${TOC[@]}"} \
       --css=../../style.css \
       --variable pagetitle="$(head -1 src.txt)" \
       --output=index.html
