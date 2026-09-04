@@ -1,0 +1,207 @@
+Hop on the Beam - Part 1
+
+"He Sees You When You're Sleeping / He Knows When You're Awake..."
+------------------------------------------------------------------
+A couple weeks ago, I noticed Comcast's "Xfinity Shield" (*) announcement - consumer-focused occupancy and motion detection based on disturbances in the RF field comprising home WiFi networks.
+
+This is simultaneously *impressive* - while there have been many papers on using WiFi Channel State Information (CSI) to detect occupancy or even identify occupants, commercializing at scale seems like - well, real work - and it's a bit alarming, for obvious privacy and security reasons.  If Comcast has productized such a capability, it's gotta be widely implemented in noncommercial contexts...
+
+(*) https://corporate.comcast.com/press/releases/comcast-introduces-intelligent-home-protection-a-new-category-for-the-connected-home-with-xfinity-shield .
+
+Then a friend sent me an interesting paper - "BFId: Identity Inference Attacks Utilizing Beamforming Feedback Information", by Todt, Morsbach, and Strufe at the KASTEL Lab at Karlsruhe Institute of Technology, published in October 2025 - https://dl.acm.org/doi/10.1145/3719027.3765062 .
+
+The KASTEL paper describes an identity inference attack against people occupying physical spaces served by an 802.11ac / WiFi 5(+) network (i.e. with beamforming capability) - quite similar in spirit to the Comcast product.  However, this attack is based on Beamforming Feedback Information (BFI) transmissions utilized in 802.11ac and above, whereas most similar previously-described inference attacks exploit WiFi Channel State Information (CSI).  Both the CSI- and BFI-based attacks provide unauthenticated, fully passive adversaries with information enabling inference based on perturbations to the radio environment of the target network.  Both attacks utilize essentially the same core information - WiFi bookkeeping data meant to maintain transmission quality in the face of a changing RF environment - but there are some differences in the content and flow of this information.
+
+I should point out that the victims - the people in the environment characterized by these techniques - do NOT need to be carrying any device, wifi-or not; these attacks classify the victim by the unique signature of their physical motion through the radio environment.
+
+The KASTEL team's BFI-based method improves the adversary's position over CSI-based attacks in two ways -
+
+First, an attacker exploiting BFI can glean the RF environmental perspective of potentially /* every */ beamforming-capable WiFi client within range and on the same channel as the attacker's radio, enabling an attacker to obtain perspectives from inside spaces they cannot physically reach.
+
+Second, an attacker utilizing CSI faces deployment constraints - firmware that surfaces CSI is only readily available for a handful of NICs, whereas BFI is available on any adapter that supports monitor mode.  While presumably procurement expense of such hardware (or even of writing new firmware) is not material for a well-funded adversary seeking to deploy new devices, the KASTEL authors point out that an adversary seeking to exploit pre-existing WiFi enabled devices (e.g. with a botnet or targeted attack) would find the BFI approach more attractive owing to the wider hardware compatibility.
+
+This is a striking capability with obvious privacy implications.
+
+Todt, Morsbach, and Strufe write with admirable clarity; the paper is easy to follow and seems thorough.  Further, the authors built a minimal implementation - in other words, their post-processing is deliberately bare-bones - their aim being to document the baseline case.  The paper has been well-received since its publication.
+
+I decided to try to replicate the work at home; it seems like a mostly-software project against existing infrastructure.
+
+Well... it /i seemed /i that way.
+
+How's this all work?
+--------------------
+You can look this all up (e.g. https://www.networkworld.com/article/967954/beamforming-explained-how-it-makes-wireless-communication-faster.html), but here are the basics.
+
+Phased-array radio transmission was first demonstrated in 1905 by Karl Braun to direct radio waves in a particular spatial direction without physically moving an antenna; a version of this technique - digital baseband beamforming - is used in modern WiFi access points to concentrate the AP's power towards the intended target WiFi client device, enabling faster communication rates and longer range.
+
+Starting with WiFi standard 802.11n (WiFi 4), WiFi APs could practice "implicit" beamforming utilizing their phased antenna array, seeking out the beam direction that best maximized communication quality with the client.  AP manufacturers were left to devise their own beamforming algorithms.
+
+The 802.11ac / WiFi 5 standard introduced an explicit "channel sounding" protocol between WiFi access points and WiFi clients for the communication of control data to enable more effective beamforming; the protocol defines Beamforming Feedback Information (BFI) packets that WiFi clients send to APs at a traffic-dependent rate; reportedly up to 100x/second for active connections.  The BFI packets provide realtime feedback from each client back to the AP serving it on how to steer the AP's transmission beam towards the client.  The WiFi -7- 8 standard -introduces- will introduce "coordinated beamforming" wherein multiple APs can coordinate their radiative patterns to minimize interference.  
+
+The KASTEL paper capitalizes on the fact that the population of WiFi clients in the network sends the BFI packets unauthenticated and continuously at a high rate - and that the Beamforming Feedback Information is a continuously-changing real-time representation of everything in the radio environment affecting the path from any client to its AP - including multipath, refraction, reflection, absorption, and so on.  A person - or object, or animal - moving through this space will result in a sequence of BFI corrections as the moving object disturbs the radio environment; this information can be captured and fed to a machine-learning classifier to extract identifying patterns - signatures - specific to an individual.  Todt, Morsbach, and Strufe demonstrated 99.5% ± 0.38 (!) classification accuracy over a large population - 161 individuals.
+
+Line 41 says "high classification accuracy over a large population - 161 individuals" — but never gives the figure. It's 99.5%  ± 
+
+Once you start digging in, you run into all kinds of other eye-raising research:
+
++ FALLDAR - https://www.computer.org/csdl/journal/tm/2023/10/09816096/1EMV5fQt8M8
++ Beamforming Forgery - https://www.computer.org/csdl/journal/tm/2026/06/11320809/2cTQzYV8qxa
++ A thoughtful post by Chaitanya Tata - https://www.linkedin.com/pulse/wi-fi-sensing-80211bf-vs-reality-part-3-bfi-gait-cleartext-tata-jwbec/
+
+Anyway...
+
+OK, so can this be done at home?  My home?
+------------------------------------------
+The WiFi setup at the site I chose for a test - my home - includes half a dozen access points all purchased within the last two years, and a few dozen WiFi clients.  Seems like a good candidate, right?
+
+This is where it starts getting interesting.
+
+The experimental environment is defined by the spatial relationships between the beamforming AP, and the "beamformee" client devices that send the BFI packets that the researchers/adversary collect, plus any objects (stationary, or moving such as the "victim" subjects) in that environment.
+
+Let's start with some important characteristics of the KASTEL setup and observations from the KASTEL team:
+
+Some observation about the paper
+--------------------------------
+The KASTEL BFI setup consists of one 4x4 AP (four transmitting antennas (antennae?), four receiving antennas) and four 2x2 clients at various locations ("perspectives") within the experimental space.  However, based on data in the paper, the KASTEL researchers train their classifier on BFI data from just ONE AP/Client pair at a time, rather than BFI data from all the clients simultaneously.
+
+*One important finding is* - the signatures learned from one "perspective" *do not transfer* to another perspective; distinguishing subjects within a new perspective requires re-training.
+
+*Second*, the KASTEL team did not attempt to assess the effect on inference-time classification accuracy of either physically *moving* any of the client devices (this would be akin to creating a new "perspective"), or of moving any objects in the environment.
+
+*Third*, the KASTEL team hypothesizes that "accuracy is highest when the *walking path intersects directly* with [the line-of-sight path between the AP and a beamformee client] and lowest when it does not", although the researchers did achieve good performance with a client out of line-of-sight with the walking path.
+
+*Fourth*, the KASTEL team hypothesizes that *gait characteristics* are an important driver of classification performance.  They find evidence to support this, in that "...perspective 2 which is mounted a bigger height achieves a lower accuracy. This indicates that the height of clients is relevant and that positioning the antennas and access points such that gait can be captured well is important."
+
+*Fifth*, the KASTEL team notes that the *BFI packet frequency* - the rate at which the channel sounding protocol reevaluates channel conditions - *depends heavily on traffic* over the channel.
+
+*Sixth*, as mentioned, the KASTEL team performed *minimal post-processing*; the input to the classifier consists of the client's unprocessed BFI reports plus the elapsed time between BFI reports.  Each BFI report comprises beamforming information for a set of subcarrier groups (74 of them for the KASTEL team's AP); each subcarrier group's BFI information is made up of angles of a "Givens decomposition" (https://en.wikipedia.org/wiki/Givens_rotation) - a set of phase angles and a set of Givens rotation angles.  For a 2x2 client communicating to a 4x4 AP, there are five phase angles and five rotation angles (direct consequence of the matrix decomposition of the rotation angles, and encoded as per IEEE 802.11-2024).  The BFI format expresses these angles as quantized codeword indices.  So that's ten angles times 74 subcarrier groups, plus one time interval = 741 features per time sample.
+
+*Seventh*, the KASTEL team trains an *LSTM* (Long Short-Term Memory) neural network.  Back in the day, before Transformer models took over the world, LSTMs [including bidirectional LSTMs] were the go-to for learning over sequential data; they were the king of speech recognition technology in the late 2010s.  They are comparatively simple and easy and low-cost to train and use.
+
+*Finally* - the KASTEL project trains on one human subject at a time, and inferences to report one classification at a time.  The result is a single multi-class model over the 161 identities (excellent), but it appears that every recording the team made contains exactly one moving person, and the classifier emits one identity per recording.
+
+Implications for my at-home experiment
+--------------------------------------
+So what do all these observations imply for a BFId-like experiment in my house?
+
+I turned to my good friend Claude Code to help plan out and execute this investigation.  "We" took an inventory of the WiFi setup to assess feasibility.
+
+Let's look at each of the important points from the KASTEL paper, from above.
+
+*1. Training is not transferable from perspective to perspective.*
+
+So my setup will have to keep careful track of the perspective, or perspectives, chosen for training.  And when choosing a particular perspective, it should be a "good" one per all the criteria the KASTEL paper mentions.  Each perspective comprises an AP and one client it's communicating with; therefore, our first job is to choose an AP/client pair that will produce the richest possible training data.
+
+Before we get into location and path-of-travel and so on, let's consider the characteristics of the APs and clients themselves.
+
+For a given AP, more antennas = more Givens angles = more features for the classifier to learn from.  This stands to reason - a beamforming AP with more antenna elements can direct a beam in space with greater precision; there should be more information available for learning in the stream of client->AP corrections as that beam is perturbed and corrected.
+
+Despite all relatively new network gear in my house, I only have a single 4x4 AP - specifically, a Ubiquiti Unifi U6 LR.  The rest of the APs are 2x2. And while a real adversary might focus on an outdoor AP if the victim might pass nearby, *my* initial focus will be on an indoor environment.  Maybe we'll do outdoors later; I have two more APs outside, although they are also only 2x2.
+
+So that's the AP side.  Now - which of my client devices will participate?
+
+When I set up my network some time ago, I put all the consumer IoT devices that want to communicate to third-party clouds and so on to a separate SSID (for traffic isolation) on 2.4GHz (for compatibility; some of these are low-capability devices).  Being on a different SSID and isolating their traffic from the rest of my network doesn't /i a priori /i stop them from participating in this experiment; modern APs can broadcast more than one SSID.
+
+But it turns out that all of these devices are, in theory, off the table - for this experiment, or exploitation by an adversary.  Explicit beamforming needs both ends to implement the same mechanism, and for these devices on this band there's no explicit beamforming mechanism defined - 802.11ac has no 2.4 GHz mode, so a "WiFi 5" device on 2.4 GHz is really a "WiFi 4" (802.11n) device.  2.4GHz networks only get explicit beamforming if both ends are at least WiFi 6 (so that either the "HE" PHY from WiFi 6 or the "EHT" PHY introduced in WiFi 7 is in play).  And I don't have any WiFi 6 client devices on my 2.4GHz network.
+
+This has a practical implication - not tested yet, but we'll try to get to it -
+
+If:
+
++ you are concerned about the "BFId" attack from the KASTEL paper, and
++ your WiFi gear doesn't have a way to turn off beamforming, and
++ some of your devices are WiFi 5 (beamforming capable), and
++ you are willing to give up beamforming in part or all of your WiFi environment, and
++ you are OK with lower performance afforded by 2.4GHz networking,
+
+Then:  an easy amelioration would be to banish the WiFi 5 client devices to a 2.4GHz-only network, or configure them to operate on 2.4GHz only, forcing them all to operate as 802.11n devices.  This won't help with WiFi 6 or WiFi 7 clients, however; this is just a way to, essentially, downgrade your WiFi 5 clients.
+
+So that rules out a bunch of wifi clients in my house - various cameras, thermostats, energy storage and monitoring devices, and the TV in the same room as the AP.  Looks like I accidentally protected myself from a BFI-based attack involving these devices.
+
+But for the purposes of the experiment, I need at least one beamforming-capable client associated with my 4x4 AP, in some geometry relative to each other and the "victim's" (that would be me) normal path of movement.  The TV would have been perfect; anyone walking into the house through the front door has to pass between the TV and the AP.  But there's no way I'm letting a smart TV onto my primary WiFi network, so it remains on the 2.4GHz network, where it is effectively degraded to 802.11n and can't participate in explicit beamforming.
+
+So, subtracting all the 2.4GHz devices from the pool of clients on my 4x4 AP, I am left with... three portable streaming loudspeakers, and an outdoor camera very far removed from the target physical space, in the opposite direction of the AP.  And the camera should be on the 2.4GHz network anyway; it's misconfigured - I guess a periodic audit is a good idea!  So we're going to ignore the camera.  Of course, I could bring my laptop or tablet or phone in the area, and they'd associate with the AP, but we're going to rule those out, too, in a minute.
+
+Which gets us to the second item from the KASTEL paper:
+
+*2. The KASTEL team did not explicitly attempt to assess the effect of moving a beamformee client.*
+
+Thinking from first principles... moving a client a half-wavelength would move it from a wave peak to a valley.  At 5GHz, a half-wavelength is about 3cm.  So that's an (extreme) upper bound on the amount of movement required to alter BFI feedback in some way.  I would expect the lower bound to potentially be tiny - a mm?  less?
+
+But what's the practical effect?  We're not identifying people based on BFI data, we're identifying them with an LSTM-based classifier trained on the BFI data.
+
+The KASTEL team found that classification results obtained by training on one "perspective" were not portable to another "perspective"; identification accuracy dropped to less than 5% - but what's the practical limit?  The KASTEL paper bounds this somewhat - two perspectives were just a meter or so apart; accuracy was ~25% when training on one and inferencing on the other.  Can we further characterize this relationship?  How far does a beamformee client need to move to comprise a different "perspective"?  I think the answer will hinge on the spatial independence of the representation learned by the LSTM.  The KASTEL results show that the representation learned by their model is not fully independent.  Ideally, a model would encode a representation tied only to the traits that distinguish individuals - e.g. gait element timing, some proxy for height or size, etc... Does an LSTM encode a representation that is spatially independent /i enough /i to permit WiFi client movement at all while retaining high accuracy? a few centimeters of movement?  Are there other ML model architectures better matched to this learning task?
+
+I hope to find out in some later phase of this experiment - but not initially.  In any case, we need to rule out the portable streaming loudspeakers; they get moved around, at least a little bit.  If that happened between training and inference, or during training, the results could be compromised.  We'll try to quantify the effect of client movement later.
+
+Now there aren't any clients left, except incidentally introduced wifi clients - obviously unsuitable.  And even worse, it seems plausible that carrying e.g. a laptop around would be the RF equivalent of carrying a very shiny object in visible light - a strong reflector and perhaps absorber - not to mention radiator of its own WiFi signal, in short, a major independent variable disruptor to the RF environment from which we're trying to extract a signal.  To compound the confound - 802.11ac/ax APs can implement Multi-User Multiple-Input Multiple Output transmission (MU-MIMO) (Downlink: 802.11ac; uplink 802.11ax).
+
+At first, I thought this could perhaps get really bad - MU-MIMO implementations can include Zero-Forcing Beamforming (ZFBF) - rearranging the beamforming to strategically temporarily attenuate other devices - but our friend Claude pointed out that ZFBF doesn't apply to the BFI packets, just data packets.  Nonetheless, Claude points out that introducing a MU-MIMO capable client into the environment could in principle cause the AP to flip from single-user (SU) MIMO to multi-user (MU) MIMO - which changes the format of the BFI packets we're relying on.   SU mode means the beamforming report describes how to aim at the client; MU means it describes how to aim at the client while also avoiding everyone else.  MU mode takes more bits in the BFI field so the angles can be more accurate.  Perhaps these reports could be normalized to a larger bit-width so it would be less of a concern for purposes of our dataset; we'll see whether this MIMO mode-change becomes a practical problem.
+
+However, I do think transient laptops, etc, are a realistic scenario, so I do *not* plan to control for the introduction of other objects such as laptops, whether or not they actively participate in the WiFi radio environment.  But we still can't use them as "beamformees" for the purposes of training our classifier, because they move around or disappear.
+
+So I'm still left with no suitable WiFi client in my best candidate location - within range of a 4x4 AP and on a major foot traffic path.
+
+I've therefore ordered a suitable Raspberry Pi plus a 2x2 WiFi adapter+antenna (to provide for more Givens angles than the single antenna built-in to the RPi) that will be my target "beamformee."  It's disappointing from an experimental perspective that I don't have a natural beamformee target - but it's heartening from a practical perspective that plausibly the best target area in the house is not an obvious clean candidate for a BFI-based attack.  I'm also setting up a suitable stationary beamformee in the back yard - right now, the 2x2 WiFi 7 AP there ensures good coverage for phones and other mobile devices but there's no fixed client.  When I have one, we'll try some outdoor experiments, although the 2x2 AP provides just one-fifth the spatial resolution of the 4x4 antenna in the primary experimental location.  We'll see how it goes.
+
+
+3."accuracy is highest when the *walking path intersects directly* with [the line-of-sight path between the AP and a beamformee client] and lowest when it does not"
+
+I'll place the RPi across the room from the 4x4 AP, affixed stationary, so that traffic entering the house must cross between the two.
+
+4. *gait characteristics* are an important driver of classification performance.
+
+I'm... well, not young.  Plenty of wear and tear to mess up my gait a little.
+
+My 4x4 AP is mounted low - about 18" from the floor, and I can choose the height at which I place my beamformee client (the RPi).  I actually like the low perspective - because three of my subjects are pretty low-slung themselves - namely subjects "Dog 1", "Dog 2", and "Cat".
+
+And I think it will be fun to see whether we can distinguish the two dogs and the cat; we'll treat them as any other subjects.
+
+
+5. *BFI packet frequency* - the rate at which the channel sounding protocol reevaluates channel conditions - *depends heavily on traffic* over the channel.
+
+I intend to first measure efficacy without any generated traffic and at a natural channel sounding (BFI packet) rate; let's see whether an unaided adversary could mount this attack.  If necessary, I will generate traffic - first I'll try just driving traffic to the streaming loudspeakers.  If that doesn't work, I'll use iperf3 just like the KASTEL team.
+
+The KASTEL team's low-BFI-sampling rates are arguably a bit artificial - they uniformly drop samples from the 10hz BFI rate driven by iperf3; this does not result in irregular sampling, because iperf3 is driving regular traffic; rather, it results in reduced-rate uniform sampling.  I think it will be interesting to see whether a more "natural" scenario can support adequate BFI sample rates (and consistency) for classification.
+
+6. the KASTEL team performed *minimal post-processing* and fed more or less raw Givens angle data to an LSTM.
+
+I truly love this aspect of the paper - it really explores the low bar - "no fancy (potentially incomprehensible, non-repeatable) AI stuff going on here!"  Kudos to the researchers for this.
+
+However, I think there is one easy enhancement worth exploring - without getting fancy about feature extraction at all.
+
+Claude noticed that the phase angle measurement - one of the Givens angles - phi - is a "circular" measurement.  In other words, while the range is [0-2pi), "0" and "2pi" are not the farthest-apart measurements - they're identical.  "0" and "pi" are the farthest possible distance apart in this circular space.  (The other Givens angle measurement is "psi" - the magnitude of the division of energy.  That's not a circular metric.  It's a little like the difference between latitude and longitude... you can always go further east (phi), but you can't always go further south (psi)...)
+
+The usual way to deal with this in a learning scenario is to transform the circular metric - with trigonometry, breaking it into sine and cosine values, which properly preserves distance relationships in phi.
+
+It is true that this optimization (slightly) violates the "no domain knowledge" bar the authors set for their model.
+
+7. The KASTEL team uses an LSTM
+
+There might be interesting alternative model architectures to use.  Not sure whether I'll bother with that.
+
+8. the KASTEL project trains on one human subject at a time, and inferences to report one classification at a time.
+
+As a first step, it seems important that the classifier permit multi-label output - "I see both Human 1 and Dog 1".  We'll see whether I can get there.
+
+And in a real environment, an adversary is not going to want to have to arrange for an empty room occupied by only one subject at a time; perhaps we can train this on activities of multiple subjects at once.  I'm guessing I won't have enough participants to really make this work, though.
+
+
+Experimental Setup
+------------------
+I've described the salient elements of the WiFi environment above.
+
+The active components:
+
+1. AP / "beamformer" - Ubiquiti U6 LR, a 4x4 AP on 5GHz.
+2. The "beamformee"  - Raspberry Pi 4 with an EDUP AX3000 USB 3.0 adapter
+   (this uses the MediaTek MT7921AU WiFi 6/802.11ax chipset and 2x2 antennas)
+3. Listener - Dell Wyse 5070 fanless thin client —
+   Intel Pentium Silver J5005 quad-core, 8 GB DDR4, 256 GB SSD, 6× USB 3.0
+   Debian 13.
+   Capture via an ALFA AWUS036AXML (MediaTek MT7921AU) in monitor mode.
+   (Adversary and victim running the same chipset; not necessary but convenient)
+4. BFI Capture & parsing software by Claude
+
+At this moment, I'm waiting for equipment to arrive - we'll see how it all goes!
+

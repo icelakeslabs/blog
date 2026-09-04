@@ -1,0 +1,15 @@
+# Post metadata. Date and slug come from the directory name (YYYY-MM-DD-slug).
+# Title is line 1 of src.txt; subtitle defaults to line 3 unless set here.
+Summary: WiFi beamforming feedback (BFI) lets a passive eavesdropper infer who is moving around a building.  This post reviews how the attack works and whether it can be reproduced at home - specifically, my home.
+# First tag is the SERIES tag — use "hop on the beam" verbatim on every part so
+# the instalments read as one series on the landing page. Topical tags follow.
+tags: hop on the beam, wifi, beamforming, privacy, security
+
+# Keep this true until the post is finished. A MISSING meta.txt, or draft:false,
+# publishes to the landing page AND the RSS feed — and feed guids are permanent.
+draft: false
+
+# No subtitle: line 3 of src.txt is the first SECTION heading ("He Sees You When
+# You're Sleeping..."), which would otherwise be advertised as the subtitle on
+# the landing page. Put a real subtitle here if you want one.
+subtitle:
