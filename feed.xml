@@ -12,6 +12,13 @@
     <description>What Ice Lakes Labs is, and why a retired research-lab director keeps finding research problems around the house.</description>
   </item>
   <item>
+    <title>Hop on the Beam - Part 1</title>
+    <link>https://blog.icelakeslabs.com/posts/2026-08-28-hop-on-the-beam-part-1/</link>
+    <guid isPermaLink="true">https://blog.icelakeslabs.com/posts/2026-08-28-hop-on-the-beam-part-1/</guid>
+    <pubDate>Fri, 28 Aug 2026 12:00:00 +0000</pubDate>
+    <description>WiFi beamforming feedback (BFI) lets a passive eavesdropper infer who is moving around a building.  This post reviews how the attack works and whether it can be reproduced at home - specifically, my home.</description>
+  </item>
+  <item>
     <title>Adventures in ESP32-based automation - Olimex and Claude take on Tesla and PG&amp;E</title>
     <link>https://blog.icelakeslabs.com/posts/2026-08-19-solar-charging/</link>
     <guid isPermaLink="true">https://blog.icelakeslabs.com/posts/2026-08-19-solar-charging/</guid>
